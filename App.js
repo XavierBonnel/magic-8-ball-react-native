@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Image, Text, StyleSheet, Animated, Easing } from "react-native";
 import { Accelerometer } from "expo-sensors";
-import { useFonts } from "expo-font";
+// import * as Font from "expo-font";
 
 import Triangle from "./components/Triangle";
 
@@ -17,16 +17,18 @@ const answers = [
 ];
 
 export default function App() {
-  async function loadFonts() {
-    await Font.loadAsync({
-      "Lexend Deca": require("./fonts/LexendDeca-Regular.ttf"),
-    });
-  }
-  useEffect(() => {
-    loadFonts();
-  }, []);
+  // async function loadFonts() {
+  //   await Font.loadAsync({
+  //     "Lexend Deca": require("./fonts/LexendDeca-Regular.ttf"),
+  //   });
+  // }
+  // useEffect(() => {
+  //   loadFonts();
+  // }, []);
   const [answer, setAnswer] = useState("");
   const [shake, setShake] = useState(false);
+  const [visibleHome, setvisibleHome] = useState(true);
+  const [backgroundColorShake, setbackgroundColorShake] = useState("white");
   const [opacity] = useState(new Animated.Value(1));
   const homeMessage1 = "Ask me anything";
   const homeMessage2 = "Then shake";
@@ -36,58 +38,61 @@ export default function App() {
       return;
     }
 
-    if (Math.abs(x) + Math.abs(y) + Math.abs(z) > 20) {
+    if (Math.abs(x) + Math.abs(y) + Math.abs(z) > 2.5) {
+      console.log("shaken");
       setShake(true);
+      setvisibleHome(false);
+
+      setbackgroundColorShake("black");
       setAnswer(answers[Math.floor(Math.random() * answers.length)]);
-      Animated.timing(opacity, {
-        toValue: 0.2,
-        duration: 250,
-        easing: Easing.ease,
-        useNativeDriver: true,
-      }).start(() => {
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 250,
-          easing: Easing.ease,
-          useNativeDriver: true,
-        }).start(() => {
-          setShake(false);
-        });
-      });
+      setTimeout(() => {
+        setShake(false);
+        setbackgroundColorShake("white");
+        setvisibleHome(true);
+      }, 4000);
     }
   });
 
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.ball, { opacity }]}>
-        <Triangle />
-      </Animated.View>
-      <Text
-        style={{
-          fontFamily: "Lexend Deca",
-          fontSize: 36,
-          fontWeight: "bold",
-          marginTop: 50,
-        }}
-      >
-        {homeMessage1}
-      </Text>
-      <Text
-        style={{ fontFamily: "Lexend Deca", fontSize: 26, fontWeight: "light" }}
-      >
-        {homeMessage2}
-      </Text>
+    <View
+      style={{
+        flex: 1,
+        alignItems: "center",
+        justifyContent: "center",
+        backgroundColor: backgroundColorShake,
+      }}
+    >
+      {visibleHome && (
+        <>
+          <Triangle />
+          <Text
+            style={{
+              // fontFamily: "Lexend Deca",
+              fontSize: 36,
+              fontWeight: "bold",
+              marginTop: 50,
+            }}
+          >
+            {homeMessage1}
+          </Text>
+          <Text
+            style={{
+              // fontFamily: "Lexend Deca",
+              fontSize: 26,
+              fontWeight: "light",
+            }}
+          >
+            {homeMessage2}
+          </Text>
+        </>
+      )}
+
       <Text style={styles.answer}>{answer}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   ball: {
     width: 200,
     height: 200,
@@ -101,5 +106,6 @@ const styles = StyleSheet.create({
   answer: {
     fontSize: 20,
     marginTop: 20,
+    color: "white",
   },
 });
