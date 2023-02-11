@@ -27,9 +27,11 @@ export default function App() {
   // }, []);
   const [answer, setAnswer] = useState("");
   const [shake, setShake] = useState(false);
-  const [visibleHome, setvisibleHome] = useState(true);
+  const [visibleTriangle, setVisibleTriangle] = useState(true);
+  const [visibleAskMe, setvisibleAskMe] = useState(true);
   const [backgroundColorShake, setbackgroundColorShake] = useState("white");
-  const [opacity] = useState(new Animated.Value(1));
+  const [scaleValue] = useState(new Animated.Value(1));
+  const [visibleAnswer, setvisibleAnswer] = useState(false);
   const homeMessage1 = "Ask me anything";
   const homeMessage2 = "Then shake";
 
@@ -39,16 +41,29 @@ export default function App() {
     }
 
     if (Math.abs(x) + Math.abs(y) + Math.abs(z) > 2.5) {
-      console.log("shaken");
-      setShake(true);
-      setvisibleHome(false);
-
+      Animated.timing(scaleValue, {
+        toValue: 4,
+        duration: 500,
+        useNativeDriver: true,
+      }).start();
+      setVisibleTriangle(false);
       setbackgroundColorShake("black");
+      setvisibleAnswer(true);
+      setShake(true);
+      setvisibleAskMe(false);
+
       setAnswer(answers[Math.floor(Math.random() * answers.length)]);
       setTimeout(() => {
         setShake(false);
+        setvisibleAnswer(false);
+        setVisibleTriangle(true);
+        Animated.timing(scaleValue, {
+          toValue: 1,
+          duration: 500,
+          useNativeDriver: true,
+        }).start();
         setbackgroundColorShake("white");
-        setvisibleHome(true);
+        setvisibleAskMe(true);
       }, 4000);
     }
   });
@@ -62,9 +77,18 @@ export default function App() {
         backgroundColor: backgroundColorShake,
       }}
     >
-      {visibleHome && (
+      {visibleTriangle && (
+        <Animated.View
+          style={{
+            transform: [{ scale: scaleValue }],
+          }}
+        >
+          <Triangle style={{ zindex: 0 }} />
+        </Animated.View>
+      )}
+
+      {visibleAskMe && (
         <>
-          <Triangle />
           <Text
             style={{
               // fontFamily: "Lexend Deca",
@@ -86,8 +110,7 @@ export default function App() {
           </Text>
         </>
       )}
-
-      <Text style={styles.answer}>{answer}</Text>
+      {visibleAnswer && <Text style={styles.answer}>{answer}</Text>}
     </View>
   );
 }
@@ -104,8 +127,10 @@ const styles = StyleSheet.create({
     height: "100%",
   },
   answer: {
-    fontSize: 20,
     marginTop: 20,
     color: "white",
+    fontSize: 36,
+    fontWeight: "bold",
+    zindex: 1,
   },
 });
