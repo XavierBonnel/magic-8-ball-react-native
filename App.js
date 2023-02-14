@@ -35,38 +35,42 @@ export default function App() {
   const homeMessage1 = "Ask me anything";
   const homeMessage2 = "Then shake";
 
-  Accelerometer.addListener(({ x, y, z }) => {
-    if (shake) {
-      return;
-    }
+  useEffect(() => {
+    Animated.timing(scaleValue, {
+      toValue: shake ? 5 : 1,
+      duration: 500,
+      useNativeDriver: true,
+    }).start();
+  }, [shake]);
 
-    if (Math.abs(x) + Math.abs(y) + Math.abs(z) > 2.5) {
-      Animated.timing(scaleValue, {
-        toValue: 4,
-        duration: 500,
-        useNativeDriver: true,
-      }).start();
-      setVisibleTriangle(false);
-      setbackgroundColorShake("black");
-      setvisibleAnswer(true);
-      setShake(true);
-      setvisibleAskMe(false);
+  useEffect(() => {
+    Accelerometer.setUpdateInterval(50);
+    Accelerometer.addListener(({ x, y, z }) => {
+      if (shake) {
+        return;
+      }
 
-      setAnswer(answers[Math.floor(Math.random() * answers.length)]);
-      setTimeout(() => {
-        setShake(false);
-        setvisibleAnswer(false);
-        setVisibleTriangle(true);
-        Animated.timing(scaleValue, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }).start();
-        setbackgroundColorShake("white");
-        setvisibleAskMe(true);
-      }, 4000);
-    }
-  });
+      if (Math.abs(x) + Math.abs(y) + Math.abs(z) > 6) {
+        setbackgroundColorShake("black");
+        setVisibleTriangle(false);
+        setvisibleAnswer(true);
+        setShake(true);
+        setvisibleAskMe(false);
+
+        setAnswer(answers[Math.floor(Math.random() * answers.length)]);
+        setTimeout(() => {
+          setShake(false);
+          setvisibleAnswer(false);
+          setVisibleTriangle(true);
+          setbackgroundColorShake("white");
+          setvisibleAskMe(true);
+        }, 4000);
+      }
+    });
+    return () => {
+      Accelerometer.removeAllListeners();
+    };
+  }, []);
 
   return (
     <View
@@ -95,6 +99,7 @@ export default function App() {
               fontSize: 36,
               fontWeight: "bold",
               marginTop: 50,
+              zindex: 1,
             }}
           >
             {homeMessage1}
@@ -104,6 +109,7 @@ export default function App() {
               // fontFamily: "Lexend Deca",
               fontSize: 26,
               fontWeight: "light",
+              zindex: 1,
             }}
           >
             {homeMessage2}
